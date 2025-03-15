@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Treasure Hunt: All About Me</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-image: url('https://img.freepik.com/premium-vector/tropical-island-background-flat-cartoon-design-lonely-tropical-island_198565-10905.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            text-align: center;
+            padding: 20px;
+            color: #333;
+            margin: 0;
+            height: 100vh;
+        }
+
+        #start-btn, #treasure-btn {
+            font-size: 20px;
+            padding: 12px 24px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #start-btn:hover, #treasure-btn:hover {
+            background-color: #45a049;
+        }
+
+        #treasure-btn {
+            background-color: #ff9800;
+            display: none;
+        }
+
+        #treasure-btn:hover {
+            background-color: #e68900;
+        }
+
+        #message {
+            font-size: 18px;
+            margin-top: 20px;
+            font-weight: bold;
+            color: black;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(6, 70px);
+            grid-template-rows: repeat(6, 70px);
+            gap: 12px;
+            margin-top: 30px;
+            justify-content: center;
+        }
+
+        .grid-item {
+            width: 70px;
+            height: 70px;
+            background-color: #e0f7fa;
+            border: 2px solid #00bcd4;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 24px;
+            font-weight: bold;
+            transition: transform 0.3s ease;
+        }
+
+        .grid-item:hover {
+            transform: scale(1.1);
+            background-color: #b2ebf2;
+        }
+
+        .grid-item.empty {
+            background-color: #ffccbc;
+        }
+
+        .grid-item.found {
+            background-color: transparent;
+        }
+
+        #treasure-icon {
+            width: 50px;
+            height: 50px;
+            background-image: url('https://cdn.dribbble.com/users/45481/screenshots/3041094/chest.gif');
+            background-size: contain;
+            animation: treasureAnimation 1s ease-out infinite;
+        }
+
+        @keyframes treasureAnimation {
+            0% { transform: rotate(0deg); }
+            50% { transform: rotate(15deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        #x-mark {
+            font-size: 36px;
+            color: #f44336;
+            font-weight: bold;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            overflow: auto;
+            padding-top: 60px;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 12px;
+            width: 80%;
+            max-width: 600px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-content h2 {
+            text-align: center;
+            color: #00bcd4;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Treasure Hunt: All About Me</h1>
+    <button id="start-btn" onclick="startGame()">Start</button>
+
+    <div id="treasure-btn-container">
+        <button id="treasure-btn" onclick="startGrid()">Start the Hunt!</button>
+    </div>
+
+    <div id="message"></div>
+    <div id="grid-container" class="grid-container" style="display: none;"></div>
+
+    <!-- The Modal -->
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>You've found a Treasure!</h2>
+            <div id="treasure-info"></div>
+        </div>
+    </div>
+
+    <script>
+        // Treasure information
+        const treasures = [
+            {
+                message: `My full name is Vinz Ian Barsatan Taquiqui. I currently reside at 16C Lt. J. Francisco St., Krus na Ligas, Quezon City, Metro Manila, and my cellphone number is 09664087069.`,
+                treasureNumber: 1
+            },
+            {
+                message: `I am a first-year student pursuing a Bachelor of Science in Information Technology. I was born on December 29, 2005, making me 19 years old.`,
+                treasureNumber: 2
+            },
+            {
+                message: `For academic purposes, my email addresses are vz.tqqschool@gmail.com and vinztaquiquischool@gmail.com. I attended St. Paul University Philippines, located at Mabini St., Ugac Norte, Tuguegarao City, Cagayan 3500, for senior high school.`,
+                treasureNumber: 3
+            },
+            {
+                message: `I am not currently a working student. However, I am a member of the Google Developer Groups on Campus at PUP. This student-driven organization, supported by Google Developers, is dedicated to helping students develop their skills and grow professionally.`,
+                treasureNumber: 4
+            },
+            {
+                message: `I view computer science as the study or understanding the foundations of how computers and technology work, how algorithms function, and how information is processed. On the other hand, Information technology for me is a broad topic that focuses on how technology helps solve our modern problems. It also includes tasks such as installing, maintaining, and checking computer systems and software.`,
+                treasureNumber: 5
+            },
+            {
+                message: `Some terms I have learned in my subjects include: 
+1. Programming language
+2. Data
+3. Software, hardware, and peopleware
+4. Network
+5. Trends
+6. Structure
+7. Loops
+8. Functions
+These are just a few of the many terms I have encountered, but these are the ones I frequently come across.`,
+                treasureNumber: 6
+            },
+            {
+                message: `I find Mathematics and Computer-related subjects both exciting and demanding. Mathematics provides an opportunity for me to think beyond my usual capacity, therefore exercising my brain, while Computer-related subjects are a lot more challenging since I am new to the field. There isn’t always a clear-cut answer to what I can and cannot do.`,
+                treasureNumber: 7
+            },
+            {
+                message: `The rise in cybercrime is alarming since we are now in the digital age. Many of our everyday objects rely on technology, and hearing about the rise in cybercrime is concerning as it threatens our security. Preventing cybercrimes requires awareness, strong passwords, and regular updates. At this point, I do not wish to be a part of the security team in a company as my knowledge is not yet sufficient. However, I am open to the possibility of this changing as my understanding in the field evolves.`,
+                treasureNumber: 8
+            }
+        ];
+
+        let foundTreasures = 0;
+        let grid = [];
+
+        // Start the game
+        function startGame() {
+            document.getElementById('start-btn').style.display = 'none';
+            document.getElementById('treasure-btn').style.display = 'inline-block';
+            document.getElementById('message').textContent = 'Click "Start the Hunt!" to find the treasures in the grid!';
+        }
+
+        // Start the 6x6 grid hunt
+        function startGrid() {
+            document.getElementById('treasure-btn').style.display = 'none';
+            document.getElementById('grid-container').style.display = 'grid';
+
+            // Create 6x6 grid
+            for (let i = 0; i < 36; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'grid-item';
+                cell.addEventListener('click', () => revealCell(i));
+                document.getElementById('grid-container').appendChild(cell);
+                grid.push(cell);
+            }
+
+            // Randomly place 8 treasures in the grid
+            let treasurePositions = [];
+            while (treasurePositions.length < 8) {
+                let randomIndex = Math.floor(Math.random() * 36);
+                if (!treasurePositions.includes(randomIndex)) {
+                    treasurePositions.push(randomIndex);
+                    grid[randomIndex].dataset.treasure = treasurePositions.length; // Assign treasure number to each cell
+                }
+            }
+        }
+
+        // Reveal the clicked cell with treasure or "X"
+        function revealCell(index) {
+            const cell = grid[index];
+            if (cell.dataset.treasure) {
+                foundTreasures++;
+                cell.classList.add('found');
+                cell.innerHTML = `<div id="treasure-icon"></div>`;
+                showTreasureMessage(cell.dataset.treasure);
+                cell.removeEventListener('click', () => revealCell(index));
+
+                if (foundTreasures === 8) {
+                    document.getElementById('message').textContent = 'Congratulations! You found all the treasures!';
+                }
+            } else {
+                cell.innerHTML = `<div id="x-mark">X</div>`;
+                cell.classList.add('empty');
+                cell.removeEventListener('click', () => revealCell(index));
+            }
+        }
+
+        // Show the treasure message in a modal
+        function showTreasureMessage(treasureNumber) {
+            const treasure = treasures.find(t => t.treasureNumber == treasureNumber);
+            document.getElementById('treasure-info').textContent = treasure.message;
+            document.getElementById('myModal').style.display = 'block';
+        }
+
+        // Close the modal
+        function closeModal() {
+            document.getElementById('myModal').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
